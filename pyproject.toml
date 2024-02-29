@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "semanticsdp"
+version = "0.1.0"
+description = "Python port of medooze/semantic-sdp-js"
+authors = ["RuslanUC <dev_ruslan_uc@protonmail.com>"]
+readme = "README.md"
+packages = [{include = "semanticsdp"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
