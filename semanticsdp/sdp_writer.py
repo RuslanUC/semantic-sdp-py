@@ -1,30 +1,30 @@
 def candidatesFormat(o):
-    s = 'candidate:%s %d %s %d %s %d typ %s'
-    s += ' raddr %s rport %d' if o.get("raddr") is not None else '%v%v'
-    s += ' tcptype %s' if o.get("tcptype") is not None else '%v'
-    s += ' generation %d' if o.get("generation") is not None else ''
-    s += ' network-id %d' if o.get('network-id') is not None else '%v'
-    s += ' network-cost %d' if o.get('network-cost') is not None else '%v'
+    s = 'candidate:{foundation} {component} {transport} {priority} {ip} {port} typ {type}'
+    s += ' raddr {raddr} rport {rport}' if o.get("raddr") is not None else ''
+    s += ' tcptype {tcptype}' if o.get("tcptype") is not None else ''
+    s += ' generation {generation}' if o.get("generation") is not None else ''
+    s += ' network-id {network-id}' if o.get('network-id') is not None else ''
+    s += ' network-cost {network-cost}' if o.get('network-cost') is not None else ''
 
     return s
 
 
 def ssrcsFormat(o):
-    s = 'ssrc:%d'
+    s = 'ssrc:{id}'
     if o.get("attribute") is not None:
-        s += ' %s'
+        s += ' {attribute}'
         if o.get("value") is not None:
-            s += ':%s'
+            s += ':{value}'
 
     return s
 
 
 def mediaClkFormat(o):
     s = 'mediaclk:'
-    s += 'id=%s %s' if o.get("id") is not None else '%v%s'
-    s += '=%s' if o.get("mediaClockValue") is not None else ''
-    s += ' rate=%s' if o.get("rateNumerator") is not None else ''
-    s += '/%s' if o.get("rateDenominator") is not None else ''
+    s += 'id={id} {mediaClockName}' if o.get("id") is not None else '{mediaClockName}'
+    s += '={mediaClockValue}' if o.get("mediaClockValue") is not None else ''
+    s += ' rate={rateNumerator}' if o.get("rateNumerator") is not None else ''
+    s += '/{rateDenominator}' if o.get("rateDenominator") is not None else ''
 
     return s
 
@@ -36,7 +36,7 @@ grammar = {
     "o": [{
         "name": 'origin',
         "names": ['username', 'sessionId', 'sessionVersion', 'netType', 'ipVer', 'address'],
-        "format": '%s %s %d %s IP%d %s'
+        "format": '{username} {sessionId} {sessionVersion} {netType} IP{ipVer} {address}'
     }],
     "s": [{"name": 'name'}],
     "i": [{"name": 'description'}],
@@ -46,17 +46,17 @@ grammar = {
     "c": [{
         "name": 'connection',
         "names": ['version', 'ip'],
-        "format": 'IN IP%d %s'
+        "format": 'IN IP{version} {ip}'
     }],
     "b": [{
         "push": 'bandwidth',
         "names": ['type', 'limit'],
-        "format": '%s:%s'
+        "format": '{type}:{limit}'
     }],
     "t": [{
         "name": 'timing',
         "names": ['start', 'stop'],
-        "format": '%d %d'
+        "format": '{start} {stop}'
     }],
     "r": [{"name": 'repeats'}],
     "z": [{"name": 'timezones'}],
@@ -64,38 +64,40 @@ grammar = {
         {
             "push": 'rtp',
             "names": ['payload', 'codec', 'rate', 'encoding'],
-            "format": lambda o: 'rtpmap:%d %s/%s/%s' if o.get("encoding") else \
-                ('rtpmap:%d %s/%s' if o.get("rate") else 'rtpmap:%d %s')
+            "format": lambda o: 'rtpmap:{payload} {codec}/{rate}/{encoding}' if o.get("encoding") else \
+                ('rtpmap:{payload} {codec}/{rate}' if o.get("rate") else 'rtpmap:{payload} {codec}')
         },
         {
             "push": 'fmtp',
             "names": ['payload', 'config'],
-            "format": 'fmtp:%d %s'
+            "format": 'fmtp:{payload} {config}'
         },
         {
             "name": 'control',
-            "format": 'control:%s'
+            "format": 'control:{control}'
         },
         {
             "name": 'rtcp',
             "names": ['port', 'netType', 'ipVer', 'address'],
-            "format": lambda o: 'rtcp:%d %s IP%d %s' if o.get("address") is not None else 'rtcp:%d'
+            "format": lambda o: 'rtcp:{port} {netType} IP{ipVer} {address}' if o.get("address") is not None \
+                else 'rtcp:{port}'
         },
         {
             "push": 'rtcpFbTrrInt',
             "names": ['payload', 'value'],
-            "format": 'rtcp-fb:%s trr-int %d'
+            "format": 'rtcp-fb:{payload} trr-int {value}'
         },
         {
             "push": 'rtcpFb',
             "names": ['payload', 'type', 'subtype'],
-            "format": lambda o: 'rtcp-fb:%s %s %s' if o.get("subtype") is not None else 'rtcp-fb:%s %s'
+            "format": lambda o: 'rtcp-fb:{payload} {type} {subtype}' if o.get("subtype") is not None \
+                else 'rtcp-fb:{payload} {type}'
         },
         {
             "push": 'ext',
             "names": ['value', 'direction', 'encrypt-uri', 'uri', 'config'],
-            "format": lambda o: 'extmap:%d' + ('/%s' if o.get("direction") else '%v') + (
-                ' %s' if o.get('encrypt-uri') else '%v') + ' %s' + (' %s' if o.get("config") else '')
+            "format": lambda o: 'extmap:{value}' + ('/{direction}' if o.get("direction") else '') + (
+                ' {encrypt-uri}' if o.get('encrypt-uri') else '') + ' {uri}' + (' {config}' if o.get("config") else '')
         },
         {
             "name": 'extmapAllowMixed',
@@ -103,31 +105,32 @@ grammar = {
         {
             "push": 'crypto',
             "names": ['id', 'suite', 'config', 'sessionConfig'],
-            "format": lambda o: ('crypto:%d %s %s %s' if o.get("sessionConfig") is not None else 'crypto:%d %s %s')
+            "format": lambda o: ('crypto:{id} {suite} {config} {sessionConfig}' if o.get("sessionConfig") is not None \
+                                     else 'crypto:{id} {suite} {config}')
         },
         {
             "name": 'setup',
-            "format": 'setup:%s'
+            "format": 'setup:{setup}'
         },
         {
             "name": 'connectionType',
-            "format": 'connection:%s'
+            "format": 'connection:{connectionType}'
         },
         {
             "name": 'mid',
-            "format": 'mid:%s'
+            "format": 'mid:{mid}'
         },
         {
             "name": 'msid',
-            "format": 'msid:%s'
+            "format": 'msid:{msid}'
         },
         {
             "name": 'ptime',
-            "format": 'ptime:%d'
+            "format": 'ptime:{ptime}'
         },
         {
             "name": 'maxptime',
-            "format": 'maxptime:%d'
+            "format": 'maxptime:{maxptime}'
         },
         {
             "name": 'direction',
@@ -137,16 +140,16 @@ grammar = {
         },
         {
             "name": 'iceUfrag',
-            "format": 'ice-ufrag:%s'
+            "format": 'ice-ufrag:{iceUfrag}'
         },
         {
             "name": 'icePwd',
-            "format": 'ice-pwd:%s'
+            "format": 'ice-pwd:{icePwd}'
         },
         {
             "name": 'fingerprint',
             "names": ['type', 'hash'],
-            "format": 'fingerprint:%s %s'
+            "format": 'fingerprint:{type} {hash}'
         },
         {
             "push": 'candidates',
@@ -159,11 +162,11 @@ grammar = {
         },
         {
             "name": 'remoteCandidates',
-            "format": 'remote-candidates:%s'
+            "format": 'remote-candidates:{remoteCandidates}'
         },
         {
             "name": 'iceOptions',
-            "format": 'ice-options:%s'
+            "format": 'ice-options:{iceOptions}'
         },
         {
             "push": 'ssrcs',
@@ -173,16 +176,16 @@ grammar = {
         {
             "push": 'ssrcGroups',
             "names": ['semantics', 'ssrcs'],
-            "format": 'ssrc-group:%s %s'
+            "format": 'ssrc-group:{semantics} {ssrcs}'
         },
         {
             "name": 'msidSemantic',
             "names": ['semantic', 'token'],
-            "format": 'msid-semantic: %s %s'},
+            "format": 'msid-semantic: {semantic} {token}'},
         {
             "push": 'groups',
             "names": ['type', 'mids'],
-            "format": 'group:%s %s'
+            "format": 'group:{type} {mids}'
         },
         {
             "name": 'rtcpMux',
@@ -193,60 +196,61 @@ grammar = {
         {
             "name": 'sctpmap',
             "names": ['sctpmapNumber', 'app', 'maxMessageSize'],
-            "format": lambda o: 'sctpmap:%s %s %s' if o.get("maxMessageSize") is not None else 'sctpmap:%s %s'
+            "format": lambda o: 'sctpmap:{sctpmapNumber} {app} {maxMessageSize}' if o.get("maxMessageSize") is not None\
+                else 'sctpmap:{sctpmapNumber} {app}'
         },
         {
             "name": 'xGoogleFlag',
-            "format": 'x-google-flag:%s'
+            "format": 'x-google-flag:{xGoogleFlag}'
         },
         {
             "push": 'rids',
             "names": ['id', 'direction', 'params'],
-            "format": lambda o: 'rid:%s %s %s' if o.get("params") else 'rid:%s %s'
+            "format": lambda o: 'rid:{id} {direction} {params}' if o.get("params") else 'rid:{id} {direction}'
         },
         {
             "push": 'imageattrs',
             "names": ['pt', 'dir1', 'attrs1', 'dir2', 'attrs2'],
-            "format": lambda o: 'imageattr:%s %s %s' + (' %s %s' if o.get("dir2") else '')
+            "format": lambda o: 'imageattr:{pt} {dir1} {attrs1}' + (' {dir2} {attrs2}' if o.get("dir2") else '')
         },
         {
             "name": 'simulcast',
             "names": ['dir1', 'list1', 'dir2', 'list2'],
-            "format": lambda o: 'simulcast:%s %s' + (' %s %s' if o.get("dir2") else '')
+            "format": lambda o: 'simulcast:{dir1} {list1}' + (' {dir2} {list2}' if o.get("dir2") else '')
         },
         {
             "name": 'simulcast_03',
             "names": ['value'],
-            "format": 'simulcast: %s'
+            "format": 'simulcast: {value}'
         },
         {
             "name": 'framerate',
-            "format": 'framerate:%s'
+            "format": 'framerate:{framerate}'
         },
         {
             "name": 'sourceFilter',
             "names": ['filterMode', 'netType', 'addressTypes', 'destAddress', 'srcList'],
-            "format": 'source-filter: %s %s %s %s %s'
+            "format": 'source-filter: {filterMode} {netType} {addressTypes} {destAddress} {srcList}'
         },
         {
             "name": 'bundleOnly',
         },
         {
             "name": 'label',
-            "format": 'label:%s'
+            "format": 'label:{label}'
         },
         {
             "name": 'sctpPort',
-            "format": 'sctp-port:%s'
+            "format": 'sctp-port:{sctpPort}'
         },
         {
             "name": 'maxMessageSize',
-            "format": 'max-message-size:%s'
+            "format": 'max-message-size:{maxMessageSize}'
         },
         {
             "push": 'tsRefClocks',
             "names": ['clksrc', 'clksrcExt'],
-            "format": lambda o: 'ts-refclk:%s' + ('=%s' if o.get("clksrcExt") is not None else '')
+            "format": lambda o: 'ts-refclk:{clksrc}' + ('={clksrcExt}' if o.get("clksrcExt") is not None else '')
         },
         {
             "name": 'mediaClk',
@@ -255,28 +259,28 @@ grammar = {
         },
         {
             "name": 'keywords',
-            "format": 'keywds:%s'
+            "format": 'keywds:{keywords}'
         },
         {
             "name": 'content',
-            "format": 'content:%s'
+            "format": 'content:{content}'
         },
         {
             "name": 'bfcpFloorCtrl',
-            "format": 'floorctrl:%s'
+            "format": 'floorctrl:{bfcpFloorCtrl}'
         },
         {
             "name": 'bfcpConfId',
-            "format": 'confid:%s'
+            "format": 'confid:{bfcpConfId}'
         },
         {
             "name": 'bfcpUserId',
-            "format": 'userid:%s'
+            "format": 'userid:{bfcpUserId}'
         },
         {
             "name": 'bfcpFloorId',
             "names": ['id', 'mStream'],
-            "format": 'floorid:%s mstrm:%s'
+            "format": 'floorid:{id} mstrm:{mStream}'
         },
         {
             "push": 'invalid',
@@ -285,38 +289,9 @@ grammar = {
     ],
     "m": [{
         "names": ['type', 'port', 'protocol', 'payloads'],
-        "format": '%s %d %s %s'
+        "format": '{type} {port} {protocol} {payloads}'
     }],
 }
-
-"""
-
-// customized util.format - discards excess arguments and can void middle ones
-var formatRegExp = /%[sdv%]/g;
-var format = function (formatStr) {
-  var i = 1;
-  var args = arguments;
-  var len = args.length;
-  return formatStr.replace(formatRegExp, function (x) {
-    if (i >= len) {
-      return x;
-    }
-    var arg = args[i];
-    i += 1;
-    switch (x) {
-    case '%%':
-      return '%';
-    case '%s':
-      return String(arg);
-    case '%d':
-      return Number(arg);
-    case '%v':
-      return '';
-    }
-  });
-};
-
-"""
 
 outerOrder = [
     'v', 'o', 's', 'i',
@@ -329,26 +304,25 @@ innerOrder = ['i', 'c', 'b', 'a']
 class SDPWriter:
     @staticmethod
     def makeLine(typ: str, obj: dict, location: dict) -> str:
-        if "format" not in obj:
-            print(f"Format not defined for {typ} ({obj}, {location[obj['name']]}, {location}).")
-            return
-        s = obj["format"] if isinstance(obj["format"], str) else \
-            obj["format"](location if obj.get("push") else location[obj["name"]])
-        args = [f"{typ}={s}"]
+        if "format" in obj:
+            s = obj["format"] if isinstance(obj["format"], str) else \
+                obj["format"](location if obj.get("push") else location[obj["name"]])
+        else:
+            s = "{%s}" % obj["name"]
+
+        fmt = f"{typ}={s}"
+        fmt_args = {}
         if obj.get("names"):
             for i in range(len(obj["names"])):
                 n = obj["names"][i]
-                if obj.get("name"):
-                    args.append(location[obj["name"]][n])
-                else:
-                    args.append(location[obj["names"][i]])
+                if obj.get("name") in location:
+                    fmt_args[n] = location[obj["name"]][n]
+                elif obj["names"][i] in location:
+                    fmt_args[obj["names"][i]] = location[obj["names"][i]]
         else:
-            args.append(location[obj["name"]])
+            fmt_args[obj["name"]] = location[obj["name"]]
 
-        print(args)
-
-        # return format.apply(null, args);
-        return ""
+        return fmt.format(**fmt_args)
 
     @staticmethod
     def write(sdp_dict: dict) -> str:
