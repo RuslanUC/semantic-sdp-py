@@ -7,11 +7,15 @@ from semanticsdp import SimulcastStreamInfo, BaseSdp
 
 @dataclass(slots=True, eq=True)
 class SimulcastInfo(BaseSdp):
-    send: list[SimulcastStreamInfo]
-    recv: list[SimulcastStreamInfo]
+    send: list[list[SimulcastStreamInfo]]
+    recv: list[list[SimulcastStreamInfo]]
 
     @classmethod
     def from_dict(cls, data: dict) -> SimulcastInfo:
-        data["send"] = [SimulcastStreamInfo.from_dict(stream) for stream in data["send"]]
-        data["recv"] = [SimulcastStreamInfo.from_dict(stream) for stream in data["recv"]]
+        for streams in data["send"]:
+            for idx, stream in enumerate(streams):
+                streams[idx] = SimulcastStreamInfo.from_dict(stream)
+        for streams in data["recv"]:
+            for idx, stream in enumerate(streams):
+                streams[idx] = SimulcastStreamInfo.from_dict(stream)
         return super(SimulcastInfo, cls).from_dict(data)
