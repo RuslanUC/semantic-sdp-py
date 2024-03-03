@@ -30,12 +30,23 @@ class MediaInfo(BaseSdp):
     datachannel: DatachannelInfo | None = None
 
     def to_dict(self) -> dict:
-        data = super().to_dict()
-        data["codecs"] = list(data["codecs"].values())
-        return data
+        return {
+            "id": self.id,
+            "type": self.type,
+            "direction": self.direction.value,
+            "extensions": self.extensions.copy(),
+            "codecs": [codec.to_dict() for codec in self.codecs.values()],
+            "rids": [rid.to_dict() for rid in self.rids.values()],
+            "simulcast": self.simulcast.to_dict() if self.simulcast else None,
+            "bitrate": self.bitrate,
+            "control": self.control,
+            "datachannel": self.datachannel.to_dict() if self.datachannel else None,
+        }
 
     @classmethod
     def from_dict(cls, data: dict) -> MediaInfo:
+        data = data.copy()
+        data["extensions"] = data.pop("extensions", {}).copy()
         data["codecs"] = {codec["type"]: CodecInfo.from_dict(codec) for codec in data.pop("codecs", [])}
         data["rids"] = {key: RIDInfo.from_dict(rid) for key, rid in data.pop("rids", {}).items()}
         data["simulcast"] = SimulcastInfo.from_dict(data["simulcast"]) if data.get("simulcast") else None

@@ -21,15 +21,23 @@ class SDPInfo(BaseSdp):
     extmap_allow_mixed: bool = True
 
     def to_dict(self) -> dict:
-        data = super().to_dict()
-        data["streams"] = list(data["streams"].values())
-        return data
+        return {
+            "version": self.version,
+            "streams": [stream.to_dict() for stream in self.streams.values()],
+            "medias": [media.to_dict() for media in self.medias],
+            "candidates": [candidate.to_dict() for candidate in self.candidates],
+            "ice": self.ice.to_dict() if self.ice else None,
+            "dtls": self.dtls.to_dict() if self.dtls else None,
+            "crypto": self.crypto.to_dict() if self.crypto else None,
+            "extmap_allow_mixed": self.extmap_allow_mixed,
+        }
 
     @classmethod
     def from_dict(cls, data: dict) -> SDPInfo:
+        data = data.copy()
         data["streams"] = {stream["id"]: StreamInfo.from_dict(stream) for stream in data.pop("streams", [])}
         data["medias"] = [MediaInfo.from_dict(media) for media in data.pop("medias", [])]
-        data["candidates"] = {key: CandidateInfo.from_dict(candidate) for key, candidate in data.pop("candidates", [])}
+        data["candidates"] = [CandidateInfo.from_dict(candidate) for candidate in data.pop("candidates", [])]
         return super(SDPInfo, cls).from_dict(data)
 
     def answer(self, ice: IceInfo | None = None, dtls: DTLSInfo | None = None, crypto: CryptoInfo | None = None,

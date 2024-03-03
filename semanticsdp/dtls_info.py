@@ -16,5 +16,6 @@ class DTLSInfo(BaseSdp):
 
     @classmethod
     def from_dict(cls, data: dict) -> DTLSInfo:
+        data = data.copy()
         data["setup"] = Setup(data.pop("setup"))
         return super(DTLSInfo, cls).from_dict(data)

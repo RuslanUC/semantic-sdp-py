@@ -15,10 +15,19 @@ class CodecInfo(BaseSdp):
     rtcpfbs: set[RTCPFeedbackInfo] = field(default_factory=set)
 
     def to_dict(self) -> dict:
-        return super().to_dict() | {"rtcpfbs": [asdict(rtcpfb) for rtcpfb in self.rtcpfbs]}
+        return {
+            "codec": self.codec,
+            "type": self.type,
+            "rtx": self.rtx,
+            "channels": self.channels,
+            "params": self.params.copy(),
+            "rtcpfbs": [rtcpfb.to_dict() for rtcpfb in self.rtcpfbs],
+        }
 
     @classmethod
     def from_dict(cls, data: dict) -> CodecInfo:
+        data = data.copy()
+        data["params"] = data.pop("params", {}).copy()
         data["rtcpfbs"] = set([RTCPFeedbackInfo.from_dict(rtcpfb) for rtcpfb in data.pop("rtcpfbs", [])])
         return super(CodecInfo, cls).from_dict(data)
 

@@ -12,7 +12,17 @@ class TrackEncodingInfo(BaseSdp):
     codecs: dict[int, CodecInfo] = field(default_factory=dict)
     params: dict[str, str] = field(default_factory=dict)
 
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "paused": self.paused,
+            "codecs": {key: codec.to_dict() for key, codec in self.codecs.items()},
+            "params": self.params.copy(),
+        }
+
     @classmethod
     def from_dict(cls, data: dict) -> TrackEncodingInfo:
+        data = data.copy()
+        data["params"] = data.pop("params", {}).copy()
         data["codecs"] = {key: CodecInfo.from_dict(codec) for key, codec in data.pop("codecs", {}).items()}
         return super(TrackEncodingInfo, cls).from_dict(data)

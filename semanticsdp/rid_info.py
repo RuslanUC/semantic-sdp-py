@@ -13,9 +13,17 @@ class RIDInfo(BaseSdp):
     params: dict[str, str] = field(default_factory=dict)
 
     def to_dict(self) -> dict:
-        return super().to_dict() | {"direction": self.direction.value}
+        return {
+            "id": self.id,
+            "direction": self.direction.value,
+            "formats": self.formats.copy(),
+            "params": self.params.copy(),
+        }
 
     @classmethod
     def from_dict(cls, data: dict) -> RIDInfo:
+        data = data.copy()
+        data["formats"] = data.pop("formats", []).copy()
+        data["params"] = data.pop("params", {}).copy()
         data["direction"] = DirectionWay(data.pop("direction"))
         return super(RIDInfo, cls).from_dict(data)
