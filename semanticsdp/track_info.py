@@ -4,9 +4,10 @@ from dataclasses import dataclass, field
 from typing import Literal
 
 from semanticsdp import TrackEncodingInfo, SourceGroupInfo, BaseSdp
+from semanticsdp._dataclass_fix import DATACLASS_KWARGS
 
 
-@dataclass(slots=True, eq=True)
+@dataclass(**DATACLASS_KWARGS)
 class TrackInfo(BaseSdp):
     media: Literal["audio", "video", "application"]
     id: str

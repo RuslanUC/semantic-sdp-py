@@ -3,9 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from semanticsdp import SimulcastStreamInfo, BaseSdp
+from semanticsdp._dataclass_fix import DATACLASS_KWARGS
 
 
-@dataclass(slots=True, eq=True)
+@dataclass(**DATACLASS_KWARGS)
 class SimulcastInfo(BaseSdp):
     send: list[list[SimulcastStreamInfo]]
     recv: list[list[SimulcastStreamInfo]]

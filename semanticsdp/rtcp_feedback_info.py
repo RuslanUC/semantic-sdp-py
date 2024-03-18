@@ -3,9 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from semanticsdp import BaseSdp
+from semanticsdp._dataclass_fix import DATACLASS_KWARGS
 
 
-@dataclass(slots=True, eq=True)
+@dataclass(**DATACLASS_KWARGS)
 class RTCPFeedbackInfo(BaseSdp):
     id: str
     params: list[str] = field(default_factory=list)

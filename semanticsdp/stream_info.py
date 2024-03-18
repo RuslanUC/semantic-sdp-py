@@ -3,9 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from semanticsdp import TrackInfo, BaseSdp
+from semanticsdp._dataclass_fix import DATACLASS_KWARGS
 
 
-@dataclass(slots=True, eq=True)
+@dataclass(**DATACLASS_KWARGS)
 class StreamInfo(BaseSdp):
     id: str
     tracks: dict[str, TrackInfo] = field(default_factory=dict)

@@ -5,6 +5,7 @@ from typing import Literal, TypedDict
 
 from semanticsdp import DirectionWay, Direction, CodecInfo, RIDInfo, SimulcastInfo, DatachannelInfo, RTCPFeedbackInfo, \
     BaseSdp
+from semanticsdp._dataclass_fix import DATACLASS_KWARGS
 
 
 class SupportedMedia(TypedDict):
@@ -16,7 +17,7 @@ class SupportedMedia(TypedDict):
     datachannel: DatachannelInfo | None
 
 
-@dataclass(slots=True, eq=True)
+@dataclass(**DATACLASS_KWARGS)
 class MediaInfo(BaseSdp):
     id: str
     type: Literal["audio", "video", "application"]
@@ -48,7 +49,7 @@ class MediaInfo(BaseSdp):
         data = data.copy()
         data["extensions"] = data.pop("extensions", {}).copy()
         data["codecs"] = {codec["type"]: CodecInfo.from_dict(codec) for codec in data.pop("codecs", [])}
-        data["rids"] = {key: RIDInfo.from_dict(rid) for key, rid in data.pop("rids", {}).items()}
+        data["rids"] = {rid["id"]: RIDInfo.from_dict(rid) for rid in data.pop("rids", [])}
         data["simulcast"] = SimulcastInfo.from_dict(data["simulcast"]) if data.get("simulcast") else None
         data["datachannel"] = DatachannelInfo.from_dict(data["datachannel"]) if data.get("datachannel") else None
         data["direction"] = Direction(data["direction"])
@@ -96,11 +97,11 @@ class MediaInfo(BaseSdp):
             send = []
             recv = []
 
-            for stream in self.simulcast.send:
-                recv.append(stream.clone())
+            for streams in self.simulcast.send:
+                recv.append([stream.clone() for stream in streams])
 
-            for stream in self.simulcast.recv:
-                send.append(stream.clone())
+            for streams in self.simulcast.recv:
+                send.append([stream.clone() for stream in streams])
 
             answer.simulcast = SimulcastInfo(send, recv)
 

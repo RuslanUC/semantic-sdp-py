@@ -6,10 +6,11 @@ from time import time
 from semanticsdp import BaseSdp, MediaInfo, StreamInfo, \
     CandidateInfo, IceInfo, DTLSInfo, CryptoInfo, Setup, Direction, CodecInfo, RTCPFeedbackInfo, DirectionWay, RIDInfo, \
     SimulcastInfo, SimulcastStreamInfo, TrackEncodingInfo, SourceInfo, TrackInfo, SourceGroupInfo, DatachannelInfo
+from semanticsdp._dataclass_fix import DATACLASS_KWARGS
 from semanticsdp.transform import SDPWriter, SDPParser
 
 
-@dataclass(slots=True, eq=True)
+@dataclass(**DATACLASS_KWARGS)
 class SDPInfo(BaseSdp):
     version: int = 1
     streams: dict[str, StreamInfo] = field(default_factory=dict)

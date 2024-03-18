@@ -3,9 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from semanticsdp import DirectionWay, BaseSdp
+from semanticsdp._dataclass_fix import DATACLASS_KWARGS
 
 
-@dataclass(slots=True, eq=True)
+@dataclass(**DATACLASS_KWARGS)
 class RIDInfo(BaseSdp):
     id: str
     direction: DirectionWay

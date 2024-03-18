@@ -4,9 +4,10 @@ from dataclasses import dataclass
 from os import urandom
 
 from semanticsdp import BaseSdp
+from semanticsdp._dataclass_fix import DATACLASS_KWARGS
 
 
-@dataclass(slots=True, eq=True)
+@dataclass(**DATACLASS_KWARGS)
 class IceInfo(BaseSdp):
     ufrag: str
     pwd: str
