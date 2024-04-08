@@ -451,7 +451,7 @@ class SDPInfo(BaseSdp):
 
                 if ssrc["attribute"].lower() == "cname":
                     source.cname = ssrc["value"]
-                elif ssrc["attribute"].lower() != "msid":
+                if ssrc["attribute"].lower() != "msid":
                     continue
 
                 source.stream_id, source.track_id = ssrc["value"].split(" ")
