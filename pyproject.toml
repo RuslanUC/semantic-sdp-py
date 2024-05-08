@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "semanticsdp"
-version = "0.1.0b8"
+version = "0.1.0b9"
 description = "Python port of medooze/semantic-sdp-js"
 authors = ["RuslanUC <dev_ruslan_uc@protonmail.com>"]
 readme = "README.md"
