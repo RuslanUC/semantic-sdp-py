@@ -339,8 +339,8 @@ class SDPInfo(BaseSdp):
                     candidate["ip"],
                     candidate["port"],
                     candidate["type"],
-                    candidate["raddr"],
-                    candidate["rport"]
+                    candidate.get("raddr"),
+                    candidate.get("rport"),
                 ))
 
             fp = media.get("fingerprint") or sdp.get("fingerprint")
